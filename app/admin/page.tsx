@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Release, Video } from "@/lib/types";
 
-const ADMIN_LOGIN = "neurorun";
+const ADMIN_LOGIN = process.env.NEXT_PUBLIC_ADMIN_LOGIN || "neurorun";
 const PWD_KEY = "nb_pwd";
 const ATTEMPTS_KEY = "nb_attempts";
 const LOCKOUT_KEY = "nb_lockout";
