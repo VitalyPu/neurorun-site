@@ -1,20 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFileSync, writeFileSync } from "fs";
-import path from "path";
+import { sql } from "@/lib/db";
 
-const CONFIG_FILE = path.join(process.cwd(), "public", "site-config.json");
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "neurobeg2024";
 
-function readConfig() {
-  try {
-    return JSON.parse(readFileSync(CONFIG_FILE, "utf-8"));
-  } catch {
-    return { tagline: ["Нейромузыкант", "Киберпанк", "Психоделика"], bio: "", albums: {} };
+async function readConfig() {
+  const rows = await sql`SELECT key, value FROM site_config`;
+  const config: Record<string, unknown> = {};
+  for (const row of rows) {
+    config[row.key] = row.value;
   }
+  return config;
 }
 
 export async function GET() {
-  return NextResponse.json(readConfig());
+  try {
+    const config = await readConfig();
+    return NextResponse.json(config);
+  } catch {
+    return NextResponse.json({ tagline: ["Нейромузыкант", "Киберпанк", "Психоделика"], bio: "", artDescriptions: {}, arts: [] });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -22,8 +26,16 @@ export async function POST(req: NextRequest) {
   if (password !== ADMIN_PASSWORD) {
     return NextResponse.json({ error: "Неверный пароль" }, { status: 401 });
   }
-  const current = readConfig();
-  const updated = { ...current, ...data };
-  writeFileSync(CONFIG_FILE, JSON.stringify(updated, null, 2));
-  return NextResponse.json(updated);
+  try {
+    for (const [key, value] of Object.entries(data)) {
+      await sql`
+        INSERT INTO site_config (key, value) VALUES (${key}, ${JSON.stringify(value)})
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+      `;
+    }
+    return NextResponse.json(await readConfig());
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "DB error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

@@ -21,7 +21,10 @@
       "Bash(sudo npm install -g vercel)",
       "Bash(~/.npm-global/bin/vercel --version)",
       "Bash(echo \"PATH: $\\(~/.npm-global/bin/vercel --version || echo 'не найден'\\)\")",
-      "Bash(~/.npm-global/bin/vercel ls *)"
+      "Bash(~/.npm-global/bin/vercel ls *)",
+      "Bash(curl -s http://localhost:3000/api/releases)",
+      "Bash(curl -s http://localhost:3000/api/videos)",
+      "Bash(~/.npm-global/bin/vercel env *)"
     ]
   }
 }

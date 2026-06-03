@@ -1,47 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFileSync, writeFileSync } from "fs";
-import path from "path";
+import { sql } from "@/lib/db";
 
-const VIDEOS_FILE = path.join(process.cwd(), "public", "videos.json");
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "neurobeg2024";
 
-function readVideos() {
-  try { return JSON.parse(readFileSync(VIDEOS_FILE, "utf-8")); }
-  catch { return []; }
-}
-function writeVideos(data: object) {
-  writeFileSync(VIDEOS_FILE, JSON.stringify(data, null, 2));
-}
-
 export async function GET() {
-  return NextResponse.json(readVideos());
+  const rows = await sql`SELECT * FROM videos ORDER BY sort_order ASC, created_at ASC`;
+  return NextResponse.json(rows.map((v) => ({
+    id: v.id, youtubeId: v.youtube_id, title: v.title,
+    description: v.description, isShort: v.is_short,
+  })));
 }
 
 export async function POST(req: NextRequest) {
   const { password, youtubeId, title, description, isShort } = await req.json();
   if (password !== ADMIN_PASSWORD) return NextResponse.json({ error: "Неверный пароль" }, { status: 401 });
-  const videos = readVideos();
-  const video = { id: Date.now().toString(), youtubeId, title: title || "", description: description || "", isShort: !!isShort };
-  videos.push(video);
-  writeVideos(videos);
-  return NextResponse.json(video, { status: 201 });
+  const id = Date.now().toString();
+  const countRows = await sql`SELECT COUNT(*) as cnt FROM videos`;
+  const sortOrder = Number(countRows[0].cnt);
+  await sql`
+    INSERT INTO videos (id, youtube_id, title, description, is_short, sort_order)
+    VALUES (${id}, ${youtubeId}, ${title || ""}, ${description || ""}, ${!!isShort}, ${sortOrder})
+  `;
+  return NextResponse.json({ id, youtubeId, title: title || "", description: description || "", isShort: !!isShort }, { status: 201 });
 }
 
 export async function PUT(req: NextRequest) {
   const { password, id, title, description } = await req.json();
   if (password !== ADMIN_PASSWORD) return NextResponse.json({ error: "Неверный пароль" }, { status: 401 });
-  const videos = readVideos();
-  const idx = videos.findIndex((v: { id: string }) => v.id === id);
-  if (idx === -1) return NextResponse.json({ error: "Не найдено" }, { status: 404 });
-  videos[idx] = { ...videos[idx], title, description };
-  writeVideos(videos);
-  return NextResponse.json(videos[idx]);
+  await sql`UPDATE videos SET title = ${title}, description = ${description} WHERE id = ${id}`;
+  return NextResponse.json({ success: true });
 }
 
 export async function DELETE(req: NextRequest) {
   const { password, id } = await req.json();
   if (password !== ADMIN_PASSWORD) return NextResponse.json({ error: "Неверный пароль" }, { status: 401 });
-  const videos = readVideos();
-  writeVideos(videos.filter((v: { id: string }) => v.id !== id));
+  await sql`DELETE FROM videos WHERE id = ${id}`;
   return NextResponse.json({ success: true });
 }
