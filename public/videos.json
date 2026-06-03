@@ -1,0 +1,15 @@
+[
+  {
+    "id": "v1",
+    "youtubeId": "8_rOeCyX17k",
+    "title": "Промо к альбому 2026",
+    "description": "На песню Воздушные змеи"
+  },
+  {
+    "id": "v2",
+    "youtubeId": "PoGNrRRBl9U",
+    "title": "Промо к альбому 2",
+    "description": "На песню Я ухожу",
+    "isShort": true
+  }
+]

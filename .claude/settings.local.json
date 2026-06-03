@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(brew install *)"
+      "Bash(brew install *)",
+      "Bash(cat /tmp/nextjs-dev.log | grep -E \"error|Error|warn|✓|ready\" | head -20)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(npm --prefix /Users/vitalyrann/Documents/Code/test-project run dev)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/admin)",
+      "Bash(curl -s -o /dev/null -w \"main: %{http_code}\\\\n\" http://localhost:3000)",
+      "Bash(curl -s -o /dev/null -w \"admin: %{http_code}\\\\n\" http://localhost:3000/admin)",
+      "Bash(curl -s -o /dev/null -w \"videos api: %{http_code}\\\\n\" http://localhost:3000/api/videos)",
+      "Bash(pkill -f \"next dev\" 2>/dev/null; sleep 1 *)"
     ]
   }
 }
