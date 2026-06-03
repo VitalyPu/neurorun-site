@@ -123,8 +123,8 @@ export default function AdminPage() {
       else setLoginError(`Неверный логин или пароль. Попыток осталось: ${MAX_ATTEMPTS - a}`);
       return;
     }
-    // Verify password via API
-    const res = await fetch("/api/config", {
+    // Verify password via dedicated auth endpoint (no filesystem writes)
+    const res = await fetch("/api/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: pwdInput }),

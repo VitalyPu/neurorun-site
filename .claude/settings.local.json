@@ -14,7 +14,14 @@
       "Bash(pkill -f \"next dev\" 2>/dev/null; sleep 1 *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(gh auth *)",
+      "Bash(vercel --version)",
+      "Bash(npm install *)",
+      "Bash(sudo npm install -g vercel)",
+      "Bash(~/.npm-global/bin/vercel --version)",
+      "Bash(echo \"PATH: $\\(~/.npm-global/bin/vercel --version || echo 'не найден'\\)\")",
+      "Bash(~/.npm-global/bin/vercel ls *)"
     ]
   }
 }
