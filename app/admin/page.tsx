@@ -74,6 +74,8 @@ export default function AdminPage() {
   const [relLoading, setRelLoading] = useState(false);
   const [editingRelease, setEditingRelease] = useState<string | null>(null);
   const [relDesc, setRelDesc] = useState("");
+  const [relTitle, setRelTitle] = useState("");
+  const [relCoverUrl, setRelCoverUrl] = useState("");
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [uploadingCoverId, setUploadingCoverId] = useState<string | null>(null);
 
@@ -187,14 +189,16 @@ export default function AdminPage() {
     e.target.value = "";
   }
 
-  async function saveReleaseDesc(id: string, description: string) {
+  async function saveRelease(id: string) {
     const pwd = getStoredPwd();
     await fetch("/api/releases", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, description, password: pwd }),
+      body: JSON.stringify({ id, description: relDesc, title: relTitle, coverUrl: relCoverUrl || undefined, password: pwd }),
     });
-    setReleases((p) => p.map((r) => r.id === id ? { ...r, description } : r));
+    setReleases((p) => p.map((r) => r.id === id
+      ? { ...r, description: relDesc, title: relTitle, coverUrl: relCoverUrl || r.coverUrl }
+      : r));
     setEditingRelease(null);
   }
 
@@ -417,18 +421,32 @@ export default function AdminPage() {
                       <p className="text-sm font-medium truncate">{r.title}</p>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                      <button onClick={() => { setEditingRelease(editingRelease === r.id ? null : r.id); setRelDesc(r.description || ""); }}
-                        className="text-xs text-cyan-400/60 hover:text-cyan-400 transition">Описание</button>
+                      <button onClick={() => {
+                        setEditingRelease(editingRelease === r.id ? null : r.id);
+                        setRelDesc(r.description || "");
+                        setRelTitle(r.title || "");
+                        setRelCoverUrl("");
+                      }} className="text-xs text-cyan-400/60 hover:text-cyan-400 transition">Изменить</button>
                       <button onClick={() => deleteRelease(r.id)} className="text-xs text-red-400/60 hover:text-red-400 transition">Удалить</button>
                     </div>
                   </div>
                   {editingRelease === r.id && (
                     <div className="space-y-2">
+                      <input value={relTitle} onChange={(e) => setRelTitle(e.target.value)}
+                        placeholder="Название релиза..."
+                        className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-cyan-400 transition" />
+                      <div className="space-y-1">
+                        <p className="text-xs text-white/40">URL обложки (вставьте прямую ссылку на изображение)</p>
+                        <input value={relCoverUrl} onChange={(e) => setRelCoverUrl(e.target.value)}
+                          placeholder="https://... (оставьте пустым, чтобы не менять)"
+                          className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-cyan-400 transition" />
+                        {relCoverUrl && <img src={relCoverUrl} alt="preview" className="w-20 h-20 object-cover rounded border border-white/20 mt-1" />}
+                      </div>
                       <textarea value={relDesc} onChange={(e) => setRelDesc(e.target.value)} rows={4}
                         placeholder="Описание релиза..."
                         className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-white text-xs resize-none focus:outline-none focus:border-cyan-400 transition" />
                       <div className="flex gap-2">
-                        <button onClick={() => saveReleaseDesc(r.id, relDesc)}
+                        <button onClick={() => saveRelease(r.id)}
                           className="px-3 py-1 bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold rounded-lg transition">Сохранить</button>
                         <button onClick={() => setEditingRelease(null)} className="text-xs text-white/40 hover:text-white transition">Отмена</button>
                       </div>

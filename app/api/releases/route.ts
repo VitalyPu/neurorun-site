@@ -34,9 +34,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const { id, description, password } = await req.json();
+  const { id, description, title, coverUrl, password } = await req.json();
   if (password !== ADMIN_PASSWORD) return NextResponse.json({ error: "Неверный пароль" }, { status: 401 });
-  await sql`UPDATE releases SET description = ${description} WHERE id = ${id}`;
+  if (description !== undefined) await sql`UPDATE releases SET description = ${description} WHERE id = ${id}`;
+  if (title !== undefined) await sql`UPDATE releases SET title = ${title} WHERE id = ${id}`;
+  if (coverUrl !== undefined) await sql`UPDATE releases SET cover_url = ${coverUrl} WHERE id = ${id}`;
   return NextResponse.json({ success: true });
 }
 
